@@ -195,6 +195,8 @@ namespace MonoDevelop.FeatureSwitch
 
     class FeatureSwitchOptionsWidget : NSStackView, IFeatureSwitchData
     {
+        NSTextField enabledPanelsTextField;
+
         public FeatureSwitchOptionsWidget()
         {
             TranslatesAutoresizingMaskIntoConstraints = false;
@@ -202,6 +204,33 @@ namespace MonoDevelop.FeatureSwitch
             Alignment = NSLayoutAttribute.Leading;
             Spacing = 10;
             Distribution = NSStackViewDistribution.Fill;
+
+            var horizontalScrollview = new NSStackView() {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                Orientation = NSUserInterfaceLayoutOrientation.Horizontal,
+                Alignment = NSLayoutAttribute.CenterY,
+                Distribution = NSStackViewDistribution.Fill
+            };
+            AddArrangedSubview(horizontalScrollview);
+            horizontalScrollview.LeadingAnchor.ConstraintEqualToAnchor(this.LeadingAnchor).Active = true;
+            horizontalScrollview.TrailingAnchor.ConstraintEqualToAnchor(this.TrailingAnchor).Active = true;
+
+            horizontalScrollview.AddArrangedSubview(new NSTextField(){
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                Bezeled = false,
+                DrawsBackground = false,
+                Editable = false,
+                Selectable = false,
+                StringValue = GettextCatalog.GetString("Enabled Panels:")
+            });;
+
+            enabledPanelsTextField = new NSTextField() { TranslatesAutoresizingMaskIntoConstraints = false };
+            horizontalScrollview.AddArrangedSubview(enabledPanelsTextField);
+            enabledPanelsTextField.Activated += EnabledPanels_Activated;
+            enabledPanelsTextField.Changed += EnabledPanels_Activated;
+
+            var enabledPanelsValue = NSUserDefaults.StandardUserDefaults.StringForKey(FeatureSwitchOptionsPanel.UserKey);
+            enabledPanelsTextField.StringValue = enabledPanelsValue ?? string.Empty;
 
             var scrollview = new AppKit.NSScrollView()
             {
@@ -243,6 +272,19 @@ namespace MonoDevelop.FeatureSwitch
             restartButton.WidthAnchor.ConstraintEqualToConstant (200).Active = true;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                enabledPanelsTextField.Activated -= EnabledPanels_Activated;
+            }
+        }
+
+        bool changed;
+        private void EnabledPanels_Activated(object sender, EventArgs e)
+            => changed = true;
+
         const string RestartSelectorName = "onRestartClicked:";
 
         [Export(RestartSelectorName)]
@@ -250,8 +292,6 @@ namespace MonoDevelop.FeatureSwitch
         {
             //reset ide api was hidden?
         }
-
-        bool changed;
 
         FeatureSwitchTableView tableView;
 
@@ -266,6 +306,9 @@ namespace MonoDevelop.FeatureSwitch
             if (!changed)
                 return;
 
+            var enabledPanels = enabledPanelsTextField.StringValue;
+            NSUserDefaults.StandardUserDefaults.SetString(enabledPanels, FeatureSwitchOptionsPanel.UserKey);
+            Environment.SetEnvironmentVariable(FeatureSwitchOptionsPanel.UserKey, enabledPanels);
             FeatureSwitchConfigurations.OnFeaturesChanged();
         }
 

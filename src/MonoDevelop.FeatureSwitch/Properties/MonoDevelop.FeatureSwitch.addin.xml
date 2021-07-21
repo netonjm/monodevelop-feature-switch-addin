@@ -10,7 +10,9 @@
 			fill="true"
 			class="MonoDevelop.FeatureSwitch.FeatureSwitchOptionsPanel" />
 	</Extension>
-
+	<Extension path="/MonoDevelop/Ide/StartupHandlers">
+		<Class class="MonoDevelop.FeatureSwitch.FeatureInitCommandHandler"/>
+	</Extension>
 	<Extension path="/MonoDevelop/Core/FeatureConfiguration/FeatureSwitchChecks">
 		<Type class="MonoDevelop.FeatureSwitch.FeatureSwitchController" />
 	</Extension>

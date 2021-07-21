@@ -1,8 +1,8 @@
 ﻿//
-// FeatureSwitchOptionsPanel.cs
+// FeatureSwitchConfigurations.cs
 //
 // Author:
-//       Matt Ward <matt.ward@microsoft.com>
+//       Jose Medrano <josmed@microsoft.com>
 //
 // Copyright (c) 2019 Microsoft Corporation
 //
@@ -24,29 +24,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Components;
-using MonoDevelop.Ide.Gui.Dialogs;
+using System;
+using Foundation;
+using MonoDevelop.Components.Commands;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.FeatureSwitch
 {
-    partial class FeatureSwitchOptionsPanel : OptionsPanel
+    public class FeatureInitCommandHandler : CommandHandler
     {
-        internal const string UserKey = "VSMAC_SHOW_NATIVE_PADS";
-
-        FeatureSwitchOptionsWidget widget;
-
-        public override Control CreatePanelWidget()
+        protected override void Run()
         {
-            if (widget == null)
-            {
-                widget = new FeatureSwitchOptionsWidget();
-            }
-            return widget;
-        }
-
-        public override void ApplyChanges()
-        {
-            widget.ApplyChanges();
+            var enabledPanelsValue = NSUserDefaults.StandardUserDefaults.StringForKey(FeatureSwitchOptionsPanel.UserKey);
+            Environment.SetEnvironmentVariable(FeatureSwitchOptionsPanel.UserKey, enabledPanelsValue);
         }
     }
 }
